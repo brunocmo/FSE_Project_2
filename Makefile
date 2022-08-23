@@ -7,12 +7,23 @@ SRCFOLDER := src/
 # .o
 OBJFOLDER := obj/
 CC := g++
-CFLAGS := -W -Wall -ansi -std=c++11 -pedantic -ggdb
+CPPFLAGS :=-W -Wall -ansi -std=c++11 -lwiringPi -lpthread -pedantic -ggdb 
+LDFLAGS=-ggdb
+LDLIBS=-lwiringPi -lpthread
+CFLAGS := -W -Wall -ggdb -x
+
 SRCFILES := $(wildcard src/*.cpp)
 all: $(SRCFILES:src/%.cpp=obj/%.o)
-	$(CC) $(CFLAGS) obj/*.o -o bin/prog
+	@ echo 'Construindo arquivo binario usando GCC linker: $<'
+	$(CC) $(LDFLAGS) obj/*.o -o bin/prog $(LDLIBS)
+	@ echo 'Terminou a construção do binario: bin/prog'
+	@ echo ' '
+
 obj/%.o: src/%.cpp
-	$(CC) $(CFLAGS) -c $< -o $@ -I./inc
+	@ echo 'Construindo target usando GCC compiler: $<'
+	$(CC) $(CPPFLAGS) -c $< -o $@ -I./inc
+	@ echo ' '
+
 run: bin/prog
 	bin/prog
 .PHONY: clean
