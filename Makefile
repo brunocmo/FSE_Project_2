@@ -6,26 +6,34 @@ INCFOLDER := inc/
 SRCFOLDER := src/
 # .o
 OBJFOLDER := obj/
-CC := g++
-CPPFLAGS :=-W -Wall -ansi -std=c++11 -lwiringPi -lpthread -pedantic -ggdb 
+CC := gcc
+CXX := g++
+CPPFLAGS := -W -Wall -ansi -std=c++11 -lwiringPi -lpthread -pedantic -ggdb 
+CFLAGS := -W -Wall -lwiringPi -ggdb 
 LDFLAGS=-ggdb
 LDLIBS=-lwiringPi -lpthread
-CFLAGS := -W -Wall -ggdb -x
-
-SRCFILES := $(wildcard src/*.cpp)
-all: $(SRCFILES:src/%.cpp=obj/%.o)
+CXX_SRCFILES := $(wildcard src/*.cpp)
+C_SRCFILES := $(wildcard src/*.c)
+CXX_OBJECTS = $(patsubst src/%.cpp,obj/%.o,$(CXX_SRCFILES))
+C_OBJECTS = $(patsubst src/%.c,obj/%.o,$(C_SRCFILES))
+all: $(CXX_OBJECTS) $(C_OBJECTS)
 	@ echo 'Construindo arquivo binario usando GCC linker: $<'
-	$(CC) $(LDFLAGS) obj/*.o -o bin/prog $(LDLIBS)
+	$(CXX) $(LDFLAGS) obj/*.o -o bin/prog $(LDLIBS)
 	@ echo 'Terminou a construção do binario: bin/prog'
 	@ echo ' '
-
+	
 obj/%.o: src/%.cpp
 	@ echo 'Construindo target usando GCC compiler: $<'
-	$(CC) $(CPPFLAGS) -c $< -o $@ -I./inc
+	$(CXX) $(CPPFLAGS) -c $< -o $@ -I./inc
+	@ echo ' '
+
+obj/%.o: src/%.c
+	@ echo 'Construindo target usando GCC compiler: $<'
+	$(CC) $(CFLAGS) -c $< -o $@ -I./inc
 	@ echo ' '
 
 run: bin/prog
-	bin/prog
+	bin/prog $$(hostname)
 .PHONY: clean
 clean:
 	rm -rf obj/*

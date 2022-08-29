@@ -3,6 +3,9 @@
 #include "Comms_MODBUS.hpp"
 #include "unistd.h"
 
+#include <bme280.h>
+#include <TemperaturaExterna.hpp>
+
 int main() {
 
   std::cout << "Hello World!!!!" << '\n';
@@ -10,7 +13,7 @@ int main() {
   ShowInfoLCD tela;
 
   tela.set_mensagemAcima16("21.1");
-  tela.set_mensagemAbaixo16("Boa noite!");
+  tela.set_mensagemAbaixo16("Boa tarde!");
 
   sleep(1);
 
@@ -26,6 +29,8 @@ int main() {
 
   comunicacao.enviarControle(false);
   // comunicacao.enviar(16.18f);
+
+  TemperaturaExterna tempExterna;
 
   std::cout << "Finalizei!" << '\n';
 
