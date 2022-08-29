@@ -50,6 +50,8 @@ class Comms_MODBUS {
         static const unsigned char ENVIAR_SINAL_REFERENCIA = 0xD2;
         static const unsigned char ENVIAR_ESTADO_SISTEMA = 0xD3;
         static const unsigned char ENVIAR_MODO_DE_CONTROLE = 0XD4;
+        static const unsigned char ENVIAR_ESTADO_FUNCIONAMENTO = 0XD5;
+        static const unsigned char ENVIAR_VALOR_TEMPORIZADOR = 0XD6;
 
         Comms_MODBUS();
         ~Comms_MODBUS();
@@ -59,6 +61,8 @@ class Comms_MODBUS {
         void enviar(float valorEnviado);
         void enviarEstado(bool estaLigado);
         void enviarControle(bool estaLigado);
+        void enviarFuncionamento(bool estaLigado);
+        void enviarTemporizador(bool estaLigado);
 };
 
 #endif

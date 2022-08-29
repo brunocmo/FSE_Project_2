@@ -128,6 +128,18 @@ void Comms_MODBUS::enviarControle(bool estaLigado) {
     enviarBuffer(4, &bufferLocal);
 }
 
+void Comms_MODBUS::enviarFuncionamento(bool estaLigado) {
+    unsigned char bufferLocal;
+    memcpy(&bufferLocal, &estaLigado, sizeof(bool));
+    enviarBuffer(5, &bufferLocal);
+}
+
+void Comms_MODBUS::enviarTemporizador(bool estaLigado) {
+    unsigned char bufferLocal;
+    memcpy(&bufferLocal, &estaLigado, sizeof(bool));
+    enviarBuffer(6, &bufferLocal);
+}
+
 
 int Comms_MODBUS::convertBufferInteiro(unsigned char *buffer) {
     int convertedValue;
@@ -188,6 +200,20 @@ bool Comms_MODBUS::enviarBuffer(int flag, unsigned char *buffer) {
         *p_tx_buffer++ = buffer[0];
         crcValue = calcula_CRC( &tx_buffer[0], 8);
         break;
+    case 5:
+        *p_tx_buffer++ = ENVIAR_ESTADO_FUNCIONAMENTO;
+        memcpy(p_tx_buffer, matricula, 4);
+        p_tx_buffer += 4;
+        *p_tx_buffer++ = buffer[0];
+        crcValue = calcula_CRC( &tx_buffer[0], 8);
+        break;
+    case 6:
+        *p_tx_buffer++ = ENVIAR_VALOR_TEMPORIZADOR;
+        memcpy(p_tx_buffer, matricula, 4);
+        p_tx_buffer += 4;
+        *p_tx_buffer++ = buffer[0];
+        crcValue = calcula_CRC( &tx_buffer[0], 8);
+        break;
     
     default:
         throw("Erro Operacao -> modoEnvio");
@@ -204,7 +230,7 @@ bool Comms_MODBUS::enviarBuffer(int flag, unsigned char *buffer) {
 
     sleep(1);
 
-    if(flag == 3 || flag == 4) {
+    if(flag == 3 || flag == 4 || flag == 5 || flag == 6) {
 
         rx_length = read(uart0_filestream, (void*)&rx_buffer, 255);
         if(rx_length < 0) {
@@ -229,6 +255,18 @@ bool Comms_MODBUS::enviarBuffer(int flag, unsigned char *buffer) {
             case 4:
                 std::cout << 
                     "Retornou um inteiro de controle " << 
+                    convertBufferInteiro(rx_buffer) << 
+                '\n';
+                break;
+            case 5:
+                std::cout << 
+                    "Retornou um inteiro de funcionamento " << 
+                    convertBufferInteiro(rx_buffer) << 
+                '\n';
+                break;
+            case 6:
+                std::cout << 
+                    "Retornou um inteiro de temporizador " << 
                     convertBufferInteiro(rx_buffer) << 
                 '\n';
                 break;
