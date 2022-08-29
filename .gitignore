@@ -3,3 +3,4 @@ connect44.sh
 transfer44.sh
 inc/wiringPi.h
 inc/wiringPiI2C.h
+inc/softPwm.h
