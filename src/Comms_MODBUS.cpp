@@ -5,6 +5,8 @@ Comms_MODBUS::Comms_MODBUS() {
     matricula[1] = 5;
     matricula[2] = 4;
     matricula[3] = 8;
+
+    comandoDoUsuario = 0;
 }
 
 Comms_MODBUS::~Comms_MODBUS() = default;
@@ -18,7 +20,8 @@ bool Comms_MODBUS::init() {
         std::cout << "Erro - Não foi possível iniciar a UART" << '\n';
         throw("Wtf");
     } else {
-        std::cout << "UART inicializada!" << '\n';
+        //std::cout << "UART inicializada!" << '\n';
+        std::cout << "---------------------------------------" << '\n';
     }
 
     tcgetattr(uart0_filestream, &options);
@@ -34,7 +37,7 @@ bool Comms_MODBUS::init() {
 
 bool Comms_MODBUS::exit() {
     close(uart0_filestream);
-    std::cout << "UART desligada!" << '\n';
+    // std::cout << "UART desligada!" << '\n';
 
     return EXIT_SUCCESS;
 }
@@ -60,7 +63,9 @@ void Comms_MODBUS::solicitacao(unsigned char codigoProtocolo) {
     // }
 
     count = write(uart0_filestream, &tx_buffer[0], (p_tx_buffer - &tx_buffer[0]));
-    std::cout << (count < 0 ? "UART TX error" : "Mandei a mensagem!") << '\n';
+
+    if ( count < 0) 
+        std::cout << "UART TX error" << '\n';
 
     sleep(1);
 
@@ -72,25 +77,28 @@ void Comms_MODBUS::solicitacao(unsigned char codigoProtocolo) {
     } else {
         rx_buffer[rx_length] = '\0';
         
-        std::cout << "Recebi a mensagem! com " << rx_length << " chars! " <<  '\n';
+        // std::cout << "Recebi a mensagem! com " << rx_length << " chars! " <<  '\n';
 
-        if( validarCRC(rx_buffer, rx_length-2)) throw("CRC invalido!");
+        if( validarCRC(rx_buffer, rx_length-2)) exit();
 
     switch (codigoProtocolo)
         {
         case SOLICITACAO_TEMP_INTERNA:
+            setTemperaturaInterna(convertBufferFloat(rx_buffer));
             std::cout << 
                 "Retornou a temperatura interna: " << 
                 convertBufferFloat(rx_buffer) << 
             '\n';
             break;    
         case SOLICITACAO_TEMP_REFERENCIA:
+            setTemperaturaReferencia(convertBufferFloat(rx_buffer));
             std::cout << 
                 "Retornou a temperatura de referencia: " << 
                 convertBufferFloat(rx_buffer) << 
             '\n';
             break;    
         case LER_USUARIO:
+            setComandoDoUsuario(convertBufferInteiro(rx_buffer));
             std::cout << 
                 "Retornou o comando do usuario " << 
                 convertBufferInteiro(rx_buffer) <<
@@ -226,7 +234,9 @@ bool Comms_MODBUS::enviarBuffer(int flag, unsigned char *buffer) {
     *p_tx_buffer++ = crcMessage[1];
 
     count = write(uart0_filestream, &tx_buffer[0], (p_tx_buffer - &tx_buffer[0]));
-    std::cout << (count < 0 ? "UART TX error" : "Mandei a mensagem!") << '\n';
+    
+    if ( count < 0) 
+        std::cout << "UART TX error" << '\n';
 
     sleep(1);
 
@@ -240,9 +250,9 @@ bool Comms_MODBUS::enviarBuffer(int flag, unsigned char *buffer) {
         } else {
             rx_buffer[rx_length] = '\0';
             
-            std::cout << "Recebi a mensagem!" << '\n';
+            // std::cout << "Recebi a mensagem!" << '\n';
             
-            if( validarCRC(rx_buffer, rx_length-2)) throw("CRC invalido!");
+            if( validarCRC(rx_buffer, rx_length-2)) return exit();
 
             switch (flag)
             {
@@ -290,10 +300,38 @@ bool Comms_MODBUS::validarCRC(unsigned char *bufferValidacao, size_t tamanho) {
     memcpy(&crcCheck, &bufferValidacao[tamanho], sizeof(short));
 
     if (crcCheck == crcValue) {
-        std::cout << "CRC validada e aceita!" << '\n';
+        // std::cout << "CRC validada e aceita!" << '\n';
         return EXIT_SUCCESS;
     } else {
         return EXIT_FAILURE;
     }
 
+}
+
+float Comms_MODBUS::getTemperaturaInterna() {
+    return this->temperaturaInterna;
+}
+
+void Comms_MODBUS::setTemperaturaInterna(float temperaturaInterna) {
+    this->temperaturaInterna = temperaturaInterna;
+}
+
+float Comms_MODBUS::getTemperaturaReferencia() {
+    return this->temperaturaReferencia;
+}
+
+void Comms_MODBUS::setTemperaturaReferencia(float temperaturaReferencia) {
+    this->temperaturaReferencia = temperaturaReferencia;
+}
+
+int Comms_MODBUS::getComandoDoUsuario() {
+    int pegarValor = this->comandoDoUsuario;
+
+    setComandoDoUsuario(0);
+
+    return pegarValor;
+}
+
+void Comms_MODBUS::setComandoDoUsuario(int comandoDoUsuario) {
+    this->comandoDoUsuario = comandoDoUsuario;
 }

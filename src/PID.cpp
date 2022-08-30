@@ -37,7 +37,7 @@ double PID::pid_controle(double saida_medida){
     else if (erro_total <= sinal_de_controle_MIN) 
     {
         erro_total = sinal_de_controle_MIN;
-
+    }
 
     double delta_error = erro - erro_anterior; // Diferença entre os erros (Termo Derivativo)
 

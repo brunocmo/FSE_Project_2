@@ -1,12 +1,5 @@
-#include "ShowInfoLCD.hpp"
-#include <bme280.h>
-#include <TemperaturaExterna.hpp>
-#include <FornoResistencia.hpp>
-#include <FornoVentoinha.hpp>
-#include "Comms_MODBUS.hpp"
-
-#include "unistd.h"
 #include <iostream>
+#include <Controle.hpp>
 
 int main() {
 
@@ -36,35 +29,21 @@ int main() {
 
   try {
 
-  std::cout << "Progamei a resistencia" << '\n';
-  FornoResistencia tentoSerBom;
-  std::cout << "Progamei a ventoinha" << '\n';
-  FornoVentoinha precisoSerBom;
+    Controle controle;
 
-  std::cout << "Liguei a resistencia" << '\n';
-  tentoSerBom.inserirValorPwm(100);
+    sleep(1);
 
-  sleep(5);
+    std::cout << "Comecou o bagulho" << '\n';
 
-  tentoSerBom.inserirValorPwm(0);
-  std::cout << "Parei a resistencia" << '\n';
-
-
-  std::cout << "Liguei a Ventoinha" << '\n';
-
-  precisoSerBom.inserirValorPwm(100);
-
-  sleep(5);
-
-  precisoSerBom.inserirValorPwm(0);
-  std::cout << "Parei a resistencia" << '\n';
-
-
-  std::cout << "Finalizei!" << '\n';
+    while(ligarGLOBAL) {
+      controle.init();
+    }
 
   } catch(const char* exception) {
     std::cerr << exception << '\n';
   }
+
+  std::cout << "Terminou o bagulho" << '\n';
 
   return 0;
 

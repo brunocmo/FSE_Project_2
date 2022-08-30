@@ -25,6 +25,10 @@ class Comms_MODBUS {
         int count;
         unsigned char matricula[4];
 
+        int comandoDoUsuario;
+        int temperaturaInterna;
+        int temperaturaReferencia;
+
         bool init();
         bool exit();
 
@@ -63,6 +67,16 @@ class Comms_MODBUS {
         void enviarControle(bool estaLigado);
         void enviarFuncionamento(bool estaLigado);
         void enviarTemporizador(bool estaLigado);
+
+
+        float getTemperaturaInterna();
+        void setTemperaturaInterna(float temperaturaInterna);
+
+        float getTemperaturaReferencia();
+        void setTemperaturaReferencia(float temperaturaReferencia);
+
+        int getComandoDoUsuario();
+        void setComandoDoUsuario(int comandoDoUsuario);
 };
 
 #endif
