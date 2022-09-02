@@ -13,7 +13,7 @@ Forno::Forno(int valorPino) {
 }
 
 Forno::~Forno() {
-    std::cout << "Parei alguma coisa" << '\n';
+    // std::cout << "Parei alguma coisa" << '\n';
     pararPwm();
 }
 

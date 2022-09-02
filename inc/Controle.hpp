@@ -8,8 +8,18 @@
 #include <PID.hpp>
 #include <ShowInfoLCD.hpp>
 #include <TemperaturaExterna.hpp>
+#include <RegistrarInformacoes.hpp>
+#include <chrono>
+#include <ctime>
+#include <stdio.h>
+#include <csignal>
 
 extern bool ligarGLOBAL;
+
+extern bool executar;
+
+void tratarSinal(int s);
+
 
 class Controle {
 
@@ -28,11 +38,17 @@ class Controle {
     int lerUsuario;
     int tempoAtual;
 
-    int temperaturaInterna;
-    int temperaturaReferencia;
-    int temperaturaAmbiente;
+    float temperaturaInterna;
+    float temperaturaReferencia;
+    float temperaturaAmbiente;
+
+    int valorVentoinha;
+    int valorResistor;
 
     double sinalControle;
+
+    char tempoString[18];
+	struct tm * timeinfo;
 
     ShowInfoLCD tela;
     Comms_MODBUS comunicacao;
@@ -40,6 +56,7 @@ class Controle {
     FornoVentoinha ventoinha;
     PID pidControle;
     TemperaturaExterna tempExterna;
+    RegistrarInformacoes registro;
     
     public:
         Controle();
@@ -54,6 +71,8 @@ class Controle {
         void controleTemperatura();
 
         void estadoDesligado();
+
+        void registraValores();
 
 };
 

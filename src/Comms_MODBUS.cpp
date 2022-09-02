@@ -19,11 +19,7 @@ bool Comms_MODBUS::init() {
     if(uart0_filestream == -1) {
         std::cout << "Erro - Não foi possível iniciar a UART" << '\n';
         throw("Wtf");
-    } else {
-        //std::cout << "UART inicializada!" << '\n';
-        std::cout << "---------------------------------------" << '\n';
     }
-
     tcgetattr(uart0_filestream, &options);
     options.c_cflag = B9600 | CS8 | CLOCAL | CREAD;
     options.c_iflag = IGNPAR;
@@ -67,7 +63,7 @@ void Comms_MODBUS::solicitacao(unsigned char codigoProtocolo) {
     if ( count < 0) 
         std::cout << "UART TX error" << '\n';
 
-    usleep(750*1000);
+    usleep(600*1000);
 
     rx_length = read(uart0_filestream, (void*)&rx_buffer, 255);
     if(rx_length < 0) {
@@ -85,24 +81,24 @@ void Comms_MODBUS::solicitacao(unsigned char codigoProtocolo) {
         {
         case SOLICITACAO_TEMP_INTERNA:
             setTemperaturaInterna(convertBufferFloat(rx_buffer));
-            std::cout << 
-                "Retornou a temperatura interna: " << 
-                convertBufferFloat(rx_buffer) << 
-            '\n';
+            // std::cout << 
+            //     "Retornou a temperatura interna: " << 
+            //     convertBufferFloat(rx_buffer) << 
+            // '\n';
             break;    
         case SOLICITACAO_TEMP_REFERENCIA:
             setTemperaturaReferencia(convertBufferFloat(rx_buffer));
-            std::cout << 
-                "Retornou a temperatura de referencia: " << 
-                convertBufferFloat(rx_buffer) << 
-            '\n';
+            // std::cout << 
+            //     "Retornou a temperatura de referencia: " << 
+            //     convertBufferFloat(rx_buffer) << 
+            // '\n';
             break;    
         case LER_USUARIO:
             setComandoDoUsuario(convertBufferInteiro(rx_buffer));
-            std::cout << 
-                "Retornou o comando do usuario " << 
-                convertBufferInteiro(rx_buffer) <<
-            '\n';
+            // std::cout << 
+            //     "Retornou o comando do usuario " << 
+            //     convertBufferInteiro(rx_buffer) <<
+            // '\n';
             break;    
         default:
             std::cout << "Deu ruim ! :c " << '\n';
@@ -239,7 +235,7 @@ bool Comms_MODBUS::enviarBuffer(int flag, unsigned char *buffer) {
 
     if(flag == 3 || flag == 4 || flag == 5) {
 
-        usleep(750*1000);
+        usleep(600*1000);
 
         rx_length = read(uart0_filestream, (void*)&rx_buffer, 255);
         if(rx_length < 0) {
@@ -256,29 +252,29 @@ bool Comms_MODBUS::enviarBuffer(int flag, unsigned char *buffer) {
             switch (flag)
             {
             case 3:
-                std::cout << 
-                    "Retornou um inteiro de estado " << 
-                    convertBufferInteiro(rx_buffer) << 
-                '\n';
+                // std::cout << 
+                //     "Retornou um inteiro de estado " << 
+                //     convertBufferInteiro(rx_buffer) << 
+                // '\n';
                 break;
             case 4:
-                std::cout << 
-                    "Retornou um inteiro de controle " << 
-                    convertBufferInteiro(rx_buffer) << 
-                '\n';
+                // std::cout << 
+                //     "Retornou um inteiro de controle " << 
+                //     convertBufferInteiro(rx_buffer) << 
+                // '\n';
                 break;
             case 5:
-                std::cout << 
-                    "Retornou um inteiro de funcionamento " << 
-                    convertBufferInteiro(rx_buffer) << 
-                '\n';
+                // std::cout << 
+                //     "Retornou um inteiro de funcionamento " << 
+                //     convertBufferInteiro(rx_buffer) << 
+                // '\n';
                 break;
             // Here but possible unused.
             case 6:
-                std::cout << 
-                    "Retornou um inteiro de temporizador " << 
-                    convertBufferInteiro(rx_buffer) << 
-                '\n';
+                // std::cout << 
+                //     "Retornou um inteiro de temporizador " << 
+                //     convertBufferInteiro(rx_buffer) << 
+                // '\n';
                 break;
             
             default:

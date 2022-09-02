@@ -25,8 +25,8 @@ class Comms_MODBUS {
         unsigned char matricula[4];
 
         int comandoDoUsuario;
-        int temperaturaInterna;
-        int temperaturaReferencia;
+        float temperaturaInterna;
+        float temperaturaReferencia;
 
         bool init();
         bool exit();
