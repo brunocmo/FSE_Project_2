@@ -17,7 +17,10 @@ RegistrarInformacoes::RegistrarInformacoes() {
         arquivo << "Temperatura Referencia" << ", ";
         arquivo << "Valor Potenciômetro" << '\n';
         arquivo.close();
-    } else std::cout << "Impossibilitado de abrir o arquivo!" << '\n';
+    } else {
+        std::cout << "Impossibilitado de abrir o arquivo!" << '\n';
+        std::cout << "Crie um arquivo log.csv na pasta doc/" << '\n';
+    }
 
 
 }
