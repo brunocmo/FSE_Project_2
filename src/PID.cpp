@@ -5,7 +5,7 @@ PID::PID() {
     Kp = 0.0;  // Ganho Proporcional
     Ki = 0.0;  // Ganho Integral
     Kd = 0.0;  // Ganho Derivativo
-    T = 1.0;      // Período de Amostragem (ms)
+    T = 5.0;      // Período de Amostragem (ms)
     erro_total = 0.0; 
     erro_anterior = 0.0;
     sinal_de_controle_MAX = 100.0;
@@ -55,6 +55,7 @@ double PID::pid_controle(double saida_medida){
     erro_anterior = erro;
 
     std::cout << "Valor do erro: " << erro_anterior << '\n';
+    std::cout << "Valor sinal: " << sinal_de_controle << '\n';
 
     return sinal_de_controle;
 }

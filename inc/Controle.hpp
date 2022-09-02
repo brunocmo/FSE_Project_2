@@ -30,6 +30,7 @@ class Controle {
 
     int temperaturaInterna;
     int temperaturaReferencia;
+    int temperaturaAmbiente;
 
     double sinalControle;
 
@@ -38,6 +39,7 @@ class Controle {
     FornoResistencia resistencia;
     FornoVentoinha ventoinha;
     PID pidControle;
+    TemperaturaExterna tempExterna;
     
     public:
         Controle();
@@ -50,6 +52,8 @@ class Controle {
         void contadorTempo();
         void recebeValorTemperaturas();
         void controleTemperatura();
+
+        void estadoDesligado();
 
 };
 

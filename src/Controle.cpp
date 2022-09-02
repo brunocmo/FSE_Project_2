@@ -15,7 +15,7 @@ Controle::Controle() {
     tempoAtual = 0;
     sinalControle = 0.0;
 
-    pidControle.pid_configura_constantes(30.0, 0.2, 200.0);
+    pidControle.pid_configura_constantes(30.0, 0.2, 425.0);
 
     comunicacao.enviarEstado(0);
 
@@ -26,21 +26,19 @@ Controle::Controle() {
 
 }
 
-Controle::~Controle() = {
-    comunicacao.enviarEstado(0);
-    comunicacao.enviarFuncionamento(false);
-    comunicacao.enviarTemporizador(0);
-    comunicacao.enviar(0);
-};
+Controle::~Controle() = default;
 
 void Controle::init() {
-    lerComandoUsuario();
+    lerComandoUsuario();                // 500 ms
     interpretarComandos();
-    recebeValorTemperaturas();
 
-    if( estaLigado && estaIniciado ) {
-        controleTemperatura();
-        contadorTempo();
+    if( estaLigado ) {
+
+        if( estaLigado && estaIniciado ) {
+            recebeValorTemperaturas();  // 500ms
+            controleTemperatura();      // 0 ms
+            contadorTempo();            // 0 ms
+        }
     }
 
     system("clear");
@@ -57,16 +55,15 @@ void Controle::interpretarComandos() {
     case 1:
         this->estaLigado = true;
         comunicacao.enviarEstado(true);
+        tela.set_mensagemAcima16(std::string("      MODO:     "));
+        tela.set_mensagemAbaixo16(std::string("      MANUAL    "));
         break;
     case 2:
-        this->estaLigado = false;
-        comunicacao.enviarEstado(false);
-        ligarGLOBAL = false;
+        estadoDesligado();
         break;
     case 3:
         this->estaIniciado = true;
         comunicacao.enviarFuncionamento(true);
-        pidControle.pid_atualiza_referencia(temperaturaReferencia);
         break;
     case 4:
         this->estaIniciado = false;
@@ -74,12 +71,12 @@ void Controle::interpretarComandos() {
         break;
     case 5:
         this->aumentarTempo = true;
-        tempoAtual += 1;
+        tempoAtual += 60;
         comunicacao.enviarTemporizador(tempoAtual);
         break;
     case 6:
         this->diminuirTempo = true;
-        tempoAtual -= 1;
+        tempoAtual -= 60;
         comunicacao.enviarTemporizador(tempoAtual);        
         break;
     case 7:
@@ -96,15 +93,8 @@ void Controle::contadorTempo() {
             tempoAtual--;
         }
 
-        if( tempoAtual == 0 && temperaturaReferencia != 30) {
-            pidControle.pid_atualiza_referencia(30.0);
-            temperaturaReferencia = 30;
-        }
-
-        if( temperaturaInterna<30 && temperaturaReferencia == 30 ) {
-            estaIniciado = false;
-            comunicacao.enviarFuncionamento(false);
-            ligarGLOBAL = false;
+        if( temperaturaInterna<=temperaturaAmbiente && temperaturaReferencia == temperaturaAmbiente ) {
+            estadoDesligado();
         }
         comunicacao.enviarTemporizador(tempoAtual); 
     }
@@ -114,26 +104,41 @@ void Controle::recebeValorTemperaturas() {
 
     comunicacao.solicitacao(Comms_MODBUS::SOLICITACAO_TEMP_INTERNA);
     comunicacao.solicitacao(Comms_MODBUS::SOLICITACAO_TEMP_REFERENCIA);
+    temperaturaAmbiente = int(tempExterna.pegarValorTemperatura());
+    std::cout << "Temperatura Ambiente: " << tempExterna.pegarValorTemperatura() << '\n';
 
     temperaturaInterna = comunicacao.getTemperaturaInterna();
 
     if(tempoAtual > 0 ) {
         temperaturaReferencia = comunicacao.getTemperaturaReferencia();
+    } else {
+        temperaturaReferencia = temperaturaAmbiente;
     }
 
     std::string escreveTemperatura;
     std::string escreveTempo;
 
+    if(temperaturaInterna>=10) {
     escreveTemperatura.append("TI: ");
+    } else {
+    escreveTemperatura.append("TI: 0");
+    }
     escreveTemperatura.append(std::to_string(temperaturaInterna));
+
+    if(temperaturaReferencia>=10) {
     escreveTemperatura.append(" TR: ");
+    } else {
+    escreveTemperatura.append(" TR: 0");
+    }
     escreveTemperatura.append(std::to_string(temperaturaReferencia));
 
+    if(tempoAtual>=10) {
     escreveTempo.append("Timer: ");
+    } else {
+    escreveTempo.append("Timer: 0");
+    }
     escreveTempo.append(std::to_string(tempoAtual));
     
-    tela.ClrLcd();
-
     tela.set_mensagemAcima16(escreveTemperatura);
     tela.set_mensagemAbaixo16(escreveTempo);
 
@@ -143,7 +148,8 @@ void Controle::recebeValorTemperaturas() {
 
 void Controle::controleTemperatura() {
 
-    sinalControle = pidControle.pid_controle(temperaturaInterna);
+    pidControle.pid_atualiza_referencia(float(temperaturaReferencia));
+    sinalControle = pidControle.pid_controle(double(temperaturaInterna));
 
     if (sinalControle > 0) {
         resistencia.inserirValorPwm(int(sinalControle));
@@ -166,4 +172,21 @@ void Controle::controleTemperatura() {
         atingiuTemp = true;
     else 
         atingiuTemp = false;
+}
+
+void Controle::estadoDesligado() {
+    tela.set_mensagemAcima16(std::string("   Desligando!  "));
+    tela.set_mensagemAbaixo16(std::string("   Aguarde...   "));
+
+    sleep(3);
+
+    estaLigado = false;
+    estaIniciado = false;
+    tempoAtual = 0;
+    comunicacao.enviarEstado(0);
+    comunicacao.enviarFuncionamento(false);
+    comunicacao.enviarTemporizador(0);
+    comunicacao.enviar(0);
+    tela.ClrLcd();
+    ligarGLOBAL = false;
 }

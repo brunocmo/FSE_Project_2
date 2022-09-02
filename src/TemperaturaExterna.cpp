@@ -1,7 +1,25 @@
 #include <TemperaturaExterna.hpp>
 
+float temperatura = 0;
+struct identifier
+{
+    /* Variable to hold device address */
+    uint8_t dev_addr;
+
+    /* Variable that contains file descriptor */
+    int8_t fd;
+};
+
+struct bme280_dev dev;
+
+struct identifier id;
+
+int8_t rslt;
+
 TemperaturaExterna::TemperaturaExterna() {
-  /* Variable to define the result */
+  temperatura = 0;
+
+    /* Variable to define the result */
   rslt = BME280_OK;
 
   if ((id.fd = open("/dev/i2c-1", O_RDWR)) < 0)
@@ -32,32 +50,35 @@ TemperaturaExterna::TemperaturaExterna() {
       fprintf(stderr, "Failed to initialize the device (code %+d).\n", rslt);
       exit(1);
   }
+}
 
+TemperaturaExterna::~TemperaturaExterna() = default;
+
+float TemperaturaExterna::pegarValorTemperatura() {
   rslt = stream_sensor_data_forced_mode(&dev);
   if (rslt != BME280_OK)
   {
       fprintf(stderr, "Failed to stream sensor data (code %+d).\n", rslt);
       exit(1);
   }
+
+  return temperatura;
 }
 
-TemperaturaExterna::~TemperaturaExterna() = default;
-
-void TemperaturaExterna::user_delay_us(uint32_t period, void *intf_ptr) {
+void user_delay_us(uint32_t period, void *intf_ptr) {
     struct identifier id;
     id = *((struct identifier *)intf_ptr);
     usleep(period);
 }
 
 
-void TemperaturaExterna::print_sensor_data(struct bme280_data *comp_data) {
+void print_sensor_data(struct bme280_data *comp_data) {
 
-    float temp, press, hum;
-
+    float temp;
     #ifdef BME280_FLOAT_ENABLE
         temp = comp_data->temperature;
-        press = 0.01 * comp_data->pressure;
-        hum = comp_data->humidity;
+        // press = 0.01 * comp_data->pressure;
+        // hum = comp_data->humidity;
     #else
     #ifdef BME280_64BIT_ENABLE
         temp = 0.01f * comp_data->temperature;
@@ -69,11 +90,12 @@ void TemperaturaExterna::print_sensor_data(struct bme280_data *comp_data) {
         hum = 1.0f / 1024.0f * comp_data->humidity;
     #endif
     #endif
-    printf("%0.2lf deg C, %0.2lf hPa, %0.2lf%%\n", temp, press, hum);
+    // printf("%0.2lf deg C, %0.2lf hPa, %0.2lf%%\n", temp, press, hum);
+    temperatura = temp;
 }
 
 
-int8_t TemperaturaExterna::user_i2c_read(uint8_t reg_addr, uint8_t *data, uint32_t len, void *intf_ptr) {
+int8_t user_i2c_read(uint8_t reg_addr, uint8_t *data, uint32_t len, void *intf_ptr) {
     struct identifier id;
 
     id = *((struct identifier *)intf_ptr);
@@ -85,7 +107,7 @@ int8_t TemperaturaExterna::user_i2c_read(uint8_t reg_addr, uint8_t *data, uint32
 }
 
 
-int8_t TemperaturaExterna::user_i2c_write(uint8_t reg_addr, const uint8_t *data, uint32_t len, void *intf_ptr) {
+int8_t user_i2c_write(uint8_t reg_addr, const uint8_t *data, uint32_t len, void *intf_ptr) {
     uint8_t *buf;
     struct identifier id;
 
@@ -105,7 +127,7 @@ int8_t TemperaturaExterna::user_i2c_write(uint8_t reg_addr, const uint8_t *data,
 }
 
 
-int8_t TemperaturaExterna::stream_sensor_data_forced_mode(struct bme280_dev *dev) {
+int8_t stream_sensor_data_forced_mode(struct bme280_dev *dev) {
 
     /* Variable to define the result */
     int8_t rslt = BME280_OK;
@@ -136,14 +158,14 @@ int8_t TemperaturaExterna::stream_sensor_data_forced_mode(struct bme280_dev *dev
         return rslt;
     }
 
-    printf("Temperature, Pressure, Humidity\n");
+    // printf("Temperature, Pressure, Humidity\n");
 
     /*Calculate the minimum delay required between consecutive measurement based upon the sensor enabled
      *  and the oversampling configuration. */
     req_delay = bme280_cal_meas_delay(&dev->settings);
 
     /* Continuously stream sensor data */
-    for(int i{0}; i < 10; i++) {
+    for(int i{0}; i < 2; i++) {
         /* Set the sensor to forced mode */
         rslt = bme280_set_sensor_mode(BME280_FORCED_MODE, dev);
         if (rslt != BME280_OK)
@@ -163,7 +185,6 @@ int8_t TemperaturaExterna::stream_sensor_data_forced_mode(struct bme280_dev *dev
 
         print_sensor_data(&comp_data);
 
-        sleep(1);
     }
 
     return rslt;

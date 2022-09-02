@@ -67,7 +67,7 @@ void Comms_MODBUS::solicitacao(unsigned char codigoProtocolo) {
     if ( count < 0) 
         std::cout << "UART TX error" << '\n';
 
-    usleep(500*1000);
+    usleep(750*1000);
 
     rx_length = read(uart0_filestream, (void*)&rx_buffer, 255);
     if(rx_length < 0) {
@@ -239,7 +239,7 @@ bool Comms_MODBUS::enviarBuffer(int flag, unsigned char *buffer) {
 
     if(flag == 3 || flag == 4 || flag == 5) {
 
-        usleep(500*1000);
+        usleep(750*1000);
 
         rx_length = read(uart0_filestream, (void*)&rx_buffer, 255);
         if(rx_length < 0) {
