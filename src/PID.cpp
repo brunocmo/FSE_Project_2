@@ -5,7 +5,7 @@ PID::PID() {
     Kp = 0.0;  // Ganho Proporcional
     Ki = 0.0;  // Ganho Integral
     Kd = 0.0;  // Ganho Derivativo
-    T = 5.0;      // Período de Amostragem (ms)
+    T = 3.0;      // Período de Amostragem (ms)
     erro_total = 0.0; 
     erro_anterior = 0.0;
     sinal_de_controle_MAX = 100.0;

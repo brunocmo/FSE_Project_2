@@ -13,6 +13,7 @@
 #include <ctime>
 #include <stdio.h>
 #include <csignal>
+#include <cmath>
 
 extern bool ligarGLOBAL;
 
@@ -47,6 +48,8 @@ class Controle {
 
     double sinalControle;
 
+    int modoOperacao;
+
     char tempoString[18];
 	struct tm * timeinfo;
 
@@ -73,6 +76,12 @@ class Controle {
         void estadoDesligado();
 
         void registraValores();
+
+        void acabouOperacao();
+
+        void mudarModo();
+
+
 
 };
 

@@ -33,7 +33,7 @@ obj/%.o: src/%.c
 	@ echo ' '
 
 run: bin/prog
-	bin/prog $$(hostname)
+	bin/prog
 .PHONY: clean
 clean:
 	rm -rf obj/*

@@ -26,8 +26,9 @@ Controle::Controle() {
     temperaturaAmbiente = 0.0f;
     temperaturaInterna = 0.0f;
     temperaturaReferencia = 0.0f;
+    modoOperacao = 0;
 
-    pidControle.pid_configura_constantes(30.0, 0.2, 500.0);
+    pidControle.pid_configura_constantes(30.0, 0.2, 400.0);
 
     comunicacao.enviarEstado(0);
 
@@ -36,9 +37,6 @@ Controle::Controle() {
     signal(SIGINT, tratarSinal);
     signal(SIGTERM, tratarSinal);
     signal(SIGHUP, tratarSinal);
-    
-    sleep(1);
-
 
     system("clear");
 }
@@ -49,17 +47,17 @@ void Controle::init() {
 
     if (executar) {
 
-    lerComandoUsuario();                // 500 ms
+    lerComandoUsuario();                // 600 ms
     interpretarComandos();
 
     if( estaLigado ) {
-
-        if( estaLigado && estaIniciado ) {
-            recebeValorTemperaturas();  // 500ms
+        if( estaIniciado ) {
+            recebeValorTemperaturas();  // 1200 ms
             controleTemperatura();      // 0 ms
             contadorTempo();            // 0 ms
             registraValores();
-        }
+        } else 
+            mudarModo();
     }
 
     } else estadoDesligado();
@@ -76,8 +74,6 @@ void Controle::interpretarComandos() {
     case 1:
         this->estaLigado = true;
         comunicacao.enviarEstado(true);
-        tela.set_mensagemAcima16(std::string("      MODO:     "));
-        tela.set_mensagemAbaixo16(std::string("      MANUAL    "));
         break;
     case 2:
         estadoDesligado();
@@ -85,23 +81,28 @@ void Controle::interpretarComandos() {
     case 3:
         this->estaIniciado = true;
         comunicacao.enviarFuncionamento(true);
+        tela.ClrLcd();
         break;
     case 4:
-        this->estaIniciado = false;
-        comunicacao.enviarFuncionamento(false);
+        acabouOperacao();
         break;
     case 5:
+        if(estaLigado) {
         this->aumentarTempo = true;
         tempoAtual += 60;
         comunicacao.enviarTemporizador(tempoAtual);
+        }
         break;
     case 6:
+        if(estaLigado) {
         this->diminuirTempo = true;
         tempoAtual -= 60;
-        comunicacao.enviarTemporizador(tempoAtual);        
+        comunicacao.enviarTemporizador(tempoAtual);   
+        }     
         break;
     case 7:
-        this->menu = true;
+        if(estaLigado)
+        modoOperacao++;
         break;
     default:
         break;
@@ -114,8 +115,8 @@ void Controle::contadorTempo() {
             tempoAtual--;
         }
 
-        if( int(temperaturaInterna)<=int(temperaturaAmbiente) && int(temperaturaReferencia) == int(temperaturaAmbiente) ) {
-            estadoDesligado();
+        if( int(floor(temperaturaInterna))<=int(temperaturaAmbiente) && int(temperaturaReferencia) == int(temperaturaAmbiente) ) {
+            acabouOperacao();
         }
         comunicacao.enviarTemporizador(tempoAtual); 
     }
@@ -124,27 +125,25 @@ void Controle::contadorTempo() {
 void Controle::recebeValorTemperaturas() {
 
     comunicacao.solicitacao(Comms_MODBUS::SOLICITACAO_TEMP_INTERNA);
-    comunicacao.solicitacao(Comms_MODBUS::SOLICITACAO_TEMP_REFERENCIA);
+    
     temperaturaAmbiente = tempExterna.pegarValorTemperatura();
     temperaturaInterna = comunicacao.getTemperaturaInterna();
 
-    if(tempoAtual > 0 ) {
-        temperaturaReferencia = comunicacao.getTemperaturaReferencia();
-    } else {
+    if(tempoAtual <= 0 ) {
         temperaturaReferencia = temperaturaAmbiente;
     }
 
     std::string escreveTemperatura;
     std::string escreveTempo;
 
-    if(temperaturaInterna>=10) {
+    if(int(temperaturaInterna)>=10) {
     escreveTemperatura.append("TI: ");
     } else {
     escreveTemperatura.append("TI: 0");
     }
     escreveTemperatura.append(std::to_string(int(temperaturaInterna)));
 
-    if(temperaturaReferencia>=10) {
+    if(int(temperaturaReferencia)>=10) {
     escreveTemperatura.append(" TR: ");
     } else {
     escreveTemperatura.append(" TR: 0");
@@ -192,7 +191,7 @@ void Controle::controleTemperatura() {
 
     comunicacao.enviar(int(sinalControle));
 
-    if( int(temperaturaInterna) >= int(temperaturaReferencia) )
+    if( int(ceil(temperaturaInterna)) >= int(temperaturaReferencia) )
         atingiuTemp = true;
     else 
         atingiuTemp = false;
@@ -202,7 +201,9 @@ void Controle::estadoDesligado() {
     tela.set_mensagemAcima16(std::string("   Desligando!  "));
     tela.set_mensagemAbaixo16(std::string("   Aguarde...   "));
 
-    sleep(3);
+    tela.mostrarMensagem();
+
+    sleep(1);
 
     estaLigado = false;
     estaIniciado = false;
@@ -215,6 +216,18 @@ void Controle::estadoDesligado() {
     resistencia.inserirValorPwm(0);
     ventoinha.inserirValorPwm(0);
     ligarGLOBAL = false;
+}
+
+void Controle::acabouOperacao() {
+    estaLigado = true;
+    estaIniciado = false;
+    tempoAtual = 0;
+    comunicacao.enviarFuncionamento(false);
+    comunicacao.enviarTemporizador(0);
+    comunicacao.enviar(0);
+    tela.ClrLcd();
+    resistencia.inserirValorPwm(0);
+    ventoinha.inserirValorPwm(0);
 }
 
 void Controle::registraValores() {
@@ -241,4 +254,41 @@ void Controle::registraValores() {
 			registro.set_tempReferencia(temperaturaReferencia);
 			registro.set_valorPotenciometro(sinalControle);
 			registro.registrarInformacoes();
+}
+
+void Controle::mudarModo() {
+
+    tela.set_mensagemAcima16(std::string("     MODO:     "));
+
+    if(modoOperacao > 2) {
+        modoOperacao = 0;
+        tempoAtual = 0;
+    };
+
+    switch (modoOperacao)
+    {
+    case 0:
+        tela.set_mensagemAbaixo16(std::string("     MANUAL    "));
+        comunicacao.solicitacao(Comms_MODBUS::SOLICITACAO_TEMP_REFERENCIA);
+        temperaturaReferencia = comunicacao.getTemperaturaReferencia();
+
+        break;
+    case 1:
+        tela.set_mensagemAbaixo16(std::string("     PIPOCA    "));
+        temperaturaReferencia = 45;
+        tempoAtual = 90;
+        break;
+    case 2:
+        tela.set_mensagemAbaixo16(std::string("  DESCONGELAR  "));
+        temperaturaReferencia = 80;
+        tempoAtual = 300;
+        break;            
+    default:
+        modoOperacao = 0;
+        break;
+    }
+
+    tela.mostrarMensagem();
+
+
 }

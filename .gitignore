@@ -6,3 +6,4 @@ inc/wiringPiI2C.h
 inc/softPwm.h
 connect43.sh
 transfer43.sh
+getLog43.sh
