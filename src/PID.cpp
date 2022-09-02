@@ -54,5 +54,7 @@ double PID::pid_controle(double saida_medida){
 
     erro_anterior = erro;
 
+    std::cout << "Valor do erro: " << erro_anterior << '\n';
+
     return sinal_de_controle;
 }

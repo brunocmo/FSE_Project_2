@@ -67,7 +67,7 @@ void Comms_MODBUS::solicitacao(unsigned char codigoProtocolo) {
     if ( count < 0) 
         std::cout << "UART TX error" << '\n';
 
-    sleep(1);
+    usleep(500*1000);
 
     rx_length = read(uart0_filestream, (void*)&rx_buffer, 255);
     if(rx_length < 0) {
@@ -142,10 +142,10 @@ void Comms_MODBUS::enviarFuncionamento(bool estaLigado) {
     enviarBuffer(5, &bufferLocal);
 }
 
-void Comms_MODBUS::enviarTemporizador(bool estaLigado) {
-    unsigned char bufferLocal;
-    memcpy(&bufferLocal, &estaLigado, sizeof(bool));
-    enviarBuffer(6, &bufferLocal);
+void Comms_MODBUS::enviarTemporizador(int valorEnviado) {
+    unsigned char bufferLocal[4];
+    memcpy(&bufferLocal, &valorEnviado, sizeof(int));
+    enviarBuffer(6, bufferLocal);
 }
 
 
@@ -200,7 +200,6 @@ bool Comms_MODBUS::enviarBuffer(int flag, unsigned char *buffer) {
         *p_tx_buffer++ = buffer[0];
         crcValue = calcula_CRC( &tx_buffer[0], 8);
         break;
-
     case 4:
         *p_tx_buffer++ = ENVIAR_MODO_DE_CONTROLE;
         memcpy(p_tx_buffer, matricula, 4);
@@ -219,10 +218,10 @@ bool Comms_MODBUS::enviarBuffer(int flag, unsigned char *buffer) {
         *p_tx_buffer++ = ENVIAR_VALOR_TEMPORIZADOR;
         memcpy(p_tx_buffer, matricula, 4);
         p_tx_buffer += 4;
-        *p_tx_buffer++ = buffer[0];
-        crcValue = calcula_CRC( &tx_buffer[0], 8);
+        memcpy(p_tx_buffer, buffer, sizeof(int));
+        p_tx_buffer += sizeof(int);
+        crcValue = calcula_CRC( &tx_buffer[0], 11);
         break;
-    
     default:
         throw("Erro Operacao -> modoEnvio");
         break;
@@ -238,9 +237,9 @@ bool Comms_MODBUS::enviarBuffer(int flag, unsigned char *buffer) {
     if ( count < 0) 
         std::cout << "UART TX error" << '\n';
 
-    sleep(1);
+    if(flag == 3 || flag == 4 || flag == 5) {
 
-    if(flag == 3 || flag == 4 || flag == 5 || flag == 6) {
+        usleep(500*1000);
 
         rx_length = read(uart0_filestream, (void*)&rx_buffer, 255);
         if(rx_length < 0) {
@@ -274,6 +273,7 @@ bool Comms_MODBUS::enviarBuffer(int flag, unsigned char *buffer) {
                     convertBufferInteiro(rx_buffer) << 
                 '\n';
                 break;
+            // Here but possible unused.
             case 6:
                 std::cout << 
                     "Retornou um inteiro de temporizador " << 

@@ -12,7 +12,6 @@
 
 class Comms_MODBUS {
     private:
-
         int uart0_filestream;
         struct termios options;
 
@@ -66,7 +65,7 @@ class Comms_MODBUS {
         void enviarEstado(bool estaLigado);
         void enviarControle(bool estaLigado);
         void enviarFuncionamento(bool estaLigado);
-        void enviarTemporizador(bool estaLigado);
+        void enviarTemporizador(int valorEnviado);
 
 
         float getTemperaturaInterna();
