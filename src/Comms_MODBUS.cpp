@@ -17,8 +17,7 @@ bool Comms_MODBUS::init() {
 
     uart0_filestream = open("/dev/serial0", O_RDWR | O_NOCTTY, O_NDELAY);
     if(uart0_filestream == -1) {
-        std::cout << "Erro - Não foi possível iniciar a UART" << '\n';
-        throw("Wtf");
+        throw("Erro - Não foi possível iniciar a UART");
     }
     tcgetattr(uart0_filestream, &options);
     options.c_cflag = B9600 | CS8 | CLOCAL | CREAD;
@@ -299,6 +298,7 @@ bool Comms_MODBUS::validarCRC(unsigned char *bufferValidacao, size_t tamanho) {
         // std::cout << "CRC validada e aceita!" << '\n';
         return EXIT_SUCCESS;
     } else {
+        std::cout << "CRC incorreto e rejeitado!" << '\n';
         return EXIT_FAILURE;
     }
 
