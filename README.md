@@ -1,4 +1,6 @@
-# FSE_Project_2
+# Trabalho 2 - 2022-1
+
+Trabalho 2 da disciplina de Fundamentos de Sistemas Embarcados (2022/1)
 
 Para acessar o projeto, clique [aqui](https://gitlab.com/fse_fga/trabalhos-2022_1/trabalho-2-2022-1).
 
@@ -11,18 +13,25 @@ Para acessar o projeto, clique [aqui](https://gitlab.com/fse_fga/trabalhos-2022_
 
 ## Requisitos
 
+O software foi feito para utilização em uma rapberryPi.
+
 É necessário o *git*, *make*, e *gpp* instalados.
 
 Tem o uso das bibliotecas instalados na Raspberry Pi: *wiringPi.h*, *wiringPiI2C.h* e *softPwm.h*.
 
 ***
 ## Instalação 
+Baixe o repositório e acesse a pasta.
+
+`git clone https://github.com/brunocmo/FSE_Project_2.git`
+
+`cd FSE_Project_2`
 
 Para compilar o programa:
 
 `make`
 
-Para executar o programa`:
+Para executar o programa:
 
 `make run`
 
