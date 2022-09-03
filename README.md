@@ -35,7 +35,7 @@ Para limpar os arquivos .o e prog(executável):
 
 Ao iniciar o programa, todo o processo é tratado via dashboard disponibilizada pelo docente. Temos então três tipos de saída da aplicação.
 
-* Via dashboard
+* Via dashboard (interação com o usuário)
 
 ![Dashboard](/doc/fse_figura_1.png)
 
@@ -65,15 +65,15 @@ Ao ligar a Airfryer pelo dashboard, você pode escolher pelo menu o modo de usab
 
 Depois de selecionar os modos, é possível iniciar a operação.
 
-No modo pipoca e descongelar, a temperatura de referência e timer, são aplicados automáticamente, sendo possível só modificar o tempo durante o funciomento do modo.
+No modo pipoca e descongelar, a temperatura de referência e timer, são aplicados automáticamente, sendo possível somente modificar o tempo durante o funciomento do modo.
 
 Já no modo manual, o usuário primeiro escolhe o tempo, depois escolhe a temperatura desejada. Por fim, é só necesssário iniciar o sistema.
 
-Quando o sistema termina de operar um certo modo, ele volta na seleção de modos possíveis novamente. Reiniciando as operações anteriores.
+Quando o sistema termina de operar em um certo modo, ele volta na seleção de modos possíveis novamente. Reiniciando as operações anteriores.
 
-Toda vez que o funcionamento do sistema é ligado, é gerado um log dos dados que fica armazeda em doc/log.csv.
+Toda vez que o funcionamento do sistema é ligado, é gerado um log dos dados que fica armazeda em doc/log.csv, toda vez que o programa é rodado novamente, é sobrescrevido no arquivo.
 
-Para sair do sistema, é possível por dois modos. Apertando o botão desligar do dashboard. Ou apertar CTRL-C dentro do console onde está rodando o programa.
+Para sair do sistema, é possível por dois modos. Apertando o botão desligar da dashboard. Ou apertar CTRL-C dentro do console onde está rodando o programa.
 
 ***
 ## Experimentos
