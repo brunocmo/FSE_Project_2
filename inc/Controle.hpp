@@ -39,6 +39,8 @@ class Controle {
     int lerUsuario;
     int tempoAtual;
 
+    int tempTimer;
+
     float temperaturaInterna;
     float temperaturaReferencia;
     float temperaturaAmbiente;

@@ -27,6 +27,7 @@ Controle::Controle() {
     temperaturaInterna = 0.0f;
     temperaturaReferencia = 0.0f;
     modoOperacao = 0;
+    tempTimer = 0;
 
     pidControle.pid_configura_constantes(30.0, 0.2, 400.0);
 
@@ -90,14 +91,14 @@ void Controle::interpretarComandos() {
         if(estaLigado) {
         this->aumentarTempo = true;
         tempoAtual += 60;
-        comunicacao.enviarTemporizador(tempoAtual);
+        comunicacao.enviarTemporizador(tempoAtual/60);
         }
         break;
     case 6:
         if(estaLigado) {
         this->diminuirTempo = true;
         tempoAtual -= 60;
-        comunicacao.enviarTemporizador(tempoAtual);   
+        comunicacao.enviarTemporizador(tempoAtual/60);   
         }     
         break;
     case 7:
@@ -118,7 +119,7 @@ void Controle::contadorTempo() {
         if( int(floor(temperaturaInterna))<=int(temperaturaAmbiente) && int(temperaturaReferencia) == int(temperaturaAmbiente) ) {
             acabouOperacao();
         }
-        comunicacao.enviarTemporizador(tempoAtual); 
+        comunicacao.enviarTemporizador(tempoAtual/60); 
     }
 }
 
@@ -131,6 +132,16 @@ void Controle::recebeValorTemperaturas() {
 
     if(tempoAtual <= 0 ) {
         temperaturaReferencia = temperaturaAmbiente;
+    } else {
+        if ( modoOperacao == 0) {
+            tempTimer++;
+            if(tempTimer > 2){
+            comunicacao.solicitacao(Comms_MODBUS::SOLICITACAO_TEMP_REFERENCIA);
+            temperaturaReferencia = comunicacao.getTemperaturaReferencia();
+            
+            tempTimer = 0;
+            }
+        }
     }
 
     std::string escreveTemperatura;
@@ -150,10 +161,14 @@ void Controle::recebeValorTemperaturas() {
     }
     escreveTemperatura.append(std::to_string(int(temperaturaReferencia)));
 
-    if(tempoAtual>=10) {
-    escreveTempo.append("Timer: ");
+    if(tempoAtual >= 100) {
+        escreveTempo.append("Timer(s): ");
     } else {
-    escreveTempo.append("Timer: 0");
+        if(tempoAtual>=10) {
+        escreveTempo.append("Timer(s): 0");
+        } else {
+        escreveTempo.append("Timer(s): 00");
+        }
     }
     escreveTempo.append(std::to_string(tempoAtual));
     
